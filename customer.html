@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Müşteri Paneli</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div>
+    <p class="eyebrow">BERBER RANDEVU</p>
+    <h1>Randevunu Oluştur</h1>
+  </div>
+  <a class="small-link" href="index.html">Ana Sayfa</a>
+</header>
+
+<main class="container customer-layout">
+  <section class="card">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">1. ADIM</p>
+        <h2>Hizmet seç</h2>
+      </div>
+      <span class="step-badge">1</span>
+    </div>
+    <div id="serviceList" class="choice-grid"></div>
+  </section>
+
+  <section class="card">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">2. ADIM</p>
+        <h2>Berber seç</h2>
+      </div>
+      <span class="step-badge">2</span>
+    </div>
+    <div id="barberList" class="choice-grid"></div>
+  </section>
+
+  <section class="card">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">3. ADIM</p>
+        <h2>Tarih seç</h2>
+      </div>
+      <span class="step-badge">3</span>
+    </div>
+    <div id="dateList" class="date-grid"></div>
+  </section>
+
+  <section class="card">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">4. ADIM</p>
+        <h2>Müsait saat</h2>
+      </div>
+      <span class="step-badge">4</span>
+    </div>
+    <div id="timeList" class="time-grid"></div>
+  </section>
+
+  <section class="card">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">5. ADIM</p>
+        <h2>Bilgilerin</h2>
+      </div>
+      <span class="step-badge">5</span>
+    </div>
+    <div class="form-grid">
+      <label>Ad Soyad<input id="customerName" type="text" placeholder="Adınız Soyadınız"></label>
+      <label>Telefon<input id="customerPhone" type="tel" placeholder="05xx xxx xx xx"></label>
+    </div>
+  </section>
+
+  <section class="card summary-card">
+    <div>
+      <p class="eyebrow">RANDEVU ÖZETİ</p>
+      <h2 id="summaryTitle">Henüz seçim yapılmadı</h2>
+      <div id="summaryDetails" class="summary-details"></div>
+    </div>
+    <button id="bookBtn" class="btn primary" disabled>Randevuyu Onayla</button>
+  </section>
+</main>
+
+<div id="modal" class="modal hidden">
+  <div class="modal-box">
+    <button id="closeModal" class="modal-close">×</button>
+    <p class="eyebrow">RANDEVU OLUŞTURULDU</p>
+    <h2>Randevun başarıyla alındı.</h2>
+    <div id="confirmation"></div>
+    <button id="modalDone" class="btn primary">Tamam</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script src="customer.js"></script>
+</body>
+</html>

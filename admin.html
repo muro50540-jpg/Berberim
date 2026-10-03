@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yönetici Paneli</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div>
+    <p class="eyebrow">YÖNETİCİ PANELİ</p>
+    <h1>Berber İşletmesi</h1>
+  </div>
+  <a class="small-link" href="index.html">Ana Sayfa</a>
+</header>
+
+<main class="container">
+  <section class="stats-grid">
+    <div class="stat-card"><span>Bugünkü Randevu</span><strong id="todayCount">0</strong></div>
+    <div class="stat-card"><span>Bugünkü Ciro</span><strong id="todayRevenue">₺0</strong></div>
+    <div class="stat-card"><span>Toplam Randevu</span><strong id="totalCount">0</strong></div>
+    <div class="stat-card"><span>Aktif Hizmet</span><strong id="serviceCount">0</strong></div>
+  </section>
+
+  <section class="card">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">RANDEVULAR</p>
+        <h2>Randevu Yönetimi</h2>
+      </div>
+      <button id="clearBtn" class="btn danger-outline">Demo verilerini temizle</button>
+    </div>
+    <div id="appointmentTable" class="table-wrap"></div>
+  </section>
+
+  <section class="admin-two-col">
+    <section class="card">
+      <div class="section-title">
+        <div><p class="eyebrow">HİZMETLER</p><h2>Hizmetler</h2></div>
+      </div>
+      <div id="adminServices"></div>
+    </section>
+    <section class="card">
+      <div class="section-title">
+        <div><p class="eyebrow">BERBERLER</p><h2>Berberler</h2></div>
+      </div>
+      <div id="adminBarbers"></div>
+    </section>
+  </section>
+</main>
+
+<script src="app.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
