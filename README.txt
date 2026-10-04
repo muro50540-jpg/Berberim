@@ -1,0 +1,1 @@
+Berberim Firebase V2. Firebase Authentication Email/Password açın. Authentication > Users'dan yönetici hesabı oluşturun. Firestore Rules bölümüne firestore.rules içeriğini yapıştırıp Publish edin. Sonra tüm dosyaları GitHub reposuna yükleyin.
