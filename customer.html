@@ -1,35 +1,171 @@
-<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Randevu | KADİR PAK HAİR STÜDİO</title><link rel="stylesheet" href="style.css"></head>
-<body><main class="booking"><header><a href="index.html" class="back">‹</a><div><b>KADİR PAK HAİR STÜDİO</b><small>RANDEVU OLUŞTUR</small></div></header>
-<section class="selected"><div><strong id="serviceName">Saç Sakal</strong><span>30 dk</span></div><b>₺700</b></section>
-<h3>TARİH SEÇİMİ</h3><div id="dates" class="dates"></div>
-<h3>SAAT SEÇİMİ</h3><p id="slotInfo" class="hint">Müsait saatler yükleniyor…</p><div id="times" class="times"></div>
-<h3>BİLGİLERİNİZ</h3><form id="form"><input id="name" required placeholder="Ad Soyad"><input id="phone" required inputmode="tel" placeholder="Telefon"><button class="btn primary" type="submit">RANDEVUYU OLUŞTUR</button></form>
-<div id="msg" class="msg" role="alert"></div></main>
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Randevu | KADİR PAK HAİR STÜDİO</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="booking-shell">
+<header class="topbar">
+  <a class="back" href="index.html">←</a>
+  <div><div class="mini-brand">KADİR PAK</div><div class="mini-sub">HAİR STÜDİO</div></div>
+  <a class="admin-link" href="admin.html">Yönetici</a>
+</header>
+
+<main class="booking">
+  <section class="intro">
+    <span class="section-kicker">RANDEVU OLUŞTUR</span>
+    <h1>Size uygun zamanı seçin.</h1>
+    <p>Hizmet, tarih ve saati seçerek randevunuzu birkaç saniyede oluşturabilirsiniz.</p>
+  </section>
+
+  <section class="service-card">
+    <div class="service-icon">✂</div>
+    <div class="service-main">
+      <span>HİZMET</span>
+      <h2>Saç Sakal</h2>
+      <p>30 dk</p>
+    </div>
+    <strong>₺700</strong>
+  </section>
+
+  <section>
+    <div class="section-title"><span>01</span><div><small>TARİH SEÇİMİ</small><h2>Ne zaman gelelim?</h2></div></div>
+    <div id="dates" class="date-grid"></div>
+  </section>
+
+  <section>
+    <div class="section-title"><span>02</span><div><small>SAAT SEÇİMİ</small><h2>Uygun saati seçin</h2></div></div>
+    <div id="selectedDateLabel" class="selected-date"></div>
+    <div id="times" class="time-grid"></div>
+  </section>
+
+  <section class="customer-card">
+    <div class="section-title"><span>03</span><div><small>BİLGİLERİNİZ</small><h2>Randevuyu tamamlayın</h2></div></div>
+    <div class="form-grid">
+      <label>Ad Soyad<input id="name" autocomplete="name" placeholder="Adınız Soyadınız"></label>
+      <label>Telefon<input id="phone" autocomplete="tel" inputmode="tel" placeholder="05xx xxx xx xx"></label>
+    </div>
+    <button id="bookBtn" class="primary-btn wide" disabled>RANDEVUYU OLUŞTUR <span>→</span></button>
+    <p id="message" class="message"></p>
+  </section>
+</main>
+</div>
+
+<div id="modal" class="modal hidden">
+  <div class="modal-backdrop"></div>
+  <div class="confirm-card">
+    <button id="closeModal" class="modal-close">×</button>
+    <div class="confirm-check">✓</div>
+    <span class="section-kicker">RANDEVU ÖZETİ</span>
+    <h2>Her şey hazır.</h2>
+    <p class="confirm-lead">Randevunuzu onaylamadan önce bilgileri kontrol edin.</p>
+    <div class="summary">
+      <div><span>Hizmet</span><strong>Saç Sakal</strong></div>
+      <div><span>Tarih</span><strong id="sumDate"></strong></div>
+      <div><span>Saat</span><strong id="sumTime"></strong></div>
+      <div><span>Ücret</span><strong>₺700</strong></div>
+    </div>
+    <button id="confirmBtn" class="primary-btn wide">RANDEVUYU ONAYLA <span>✓</span></button>
+  </div>
+</div>
+
 <script type="module">
-import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import {getFirestore,collection,query,where,getDocs,addDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { getFirestore, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
 const firebaseConfig = {
-  apiKey: "AIzaSyAKrffq7wJ0mDtPdsShYworqCIRYkR2okM",
-  authDomain: "berberim-83c47.firebaseapp.com",
-  projectId: "berberim-83c47",
-  storageBucket: "berberim-83c47.firebasestorage.app",
-  messagingSenderId: "235586545993",
-  appId: "1:235586545993:web:c05d6500909c27f4f81298",
-  measurementId: "G-CBR04D6NZ6"
+  apiKey:"AIzaSyAKrffq7wJ0mDtPdsShYworqCIRYkR2okM",
+  authDomain:"berberim-83c47.firebaseapp.com",
+  projectId:"berberim-83c47",
+  storageBucket:"berberim-83c47.firebasestorage.app",
+  messagingSenderId:"235586545993",
+  appId:"1:235586545993:web:c05d6500909c27f4f81298",
+  measurementId:"G-CBR04D6NZ6"
 };
-const app=initializeApp(firebaseConfig),db=getFirestore(app); let selectedDate='',selectedTime='';
-const pad=n=>String(n).padStart(2,'0');
-function dateKey(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
-function trDate(d){return new Intl.DateTimeFormat('tr-TR',{weekday:'short',day:'2-digit',month:'short'}).format(d)}
-function buildDates(){const el=document.getElementById('dates'); for(let i=0;i<14;i++){let d=new Date();d.setHours(12);d.setDate(d.getDate()+i);let key=dateKey(d);let b=document.createElement('button');b.type='button';b.className='date';b.innerHTML='<b>'+d.getDate()+'</b><span>'+trDate(d).split(' ')[0]+'</span>';b.onclick=()=>selectDate(key,b);el.appendChild(b);} selectDate(dateKey(new Date()),el.firstChild)}
-async function selectDate(key,btn){selectedDate=key;document.querySelectorAll('.date').forEach(x=>x.classList.remove('active'));btn.classList.add('active');await loadTimes()}
-const slots=['10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30','19:00'];
-async function loadTimes(){const el=document.getElementById('times');el.innerHTML='';document.getElementById('slotInfo').textContent='Müsait saatler yükleniyor…';
-try{const q=query(collection(db,'appointments'),where('date','==',selectedDate));const snap=await getDocs(q);const taken=new Set(snap.docs.map(d=>d.data().time));slots.forEach(t=>{const b=document.createElement('button');b.type='button';b.className='time '+(taken.has(t)?'full':'');b.textContent=t;taken.has(t)?(b.disabled=true,b.title='Bu saat dolu'):(b.onclick=()=>{selectedTime=t;document.querySelectorAll('.time').forEach(x=>x.classList.remove('active'));b.classList.add('active')});el.appendChild(b)});document.getElementById('slotInfo').textContent=taken.size?'Dolu saatler otomatik kapatıldı.':'Bugün tüm saatler müsait.'}catch(e){console.error(e);document.getElementById('slotInfo').textContent='Saatler yüklenemedi. Lütfen tekrar deneyin.'}}
-document.getElementById('form').addEventListener('submit',async e=>{e.preventDefault();const msg=document.getElementById('msg');msg.className='msg';msg.textContent='';if(!selectedDate||!selectedTime){msg.className='msg error';msg.textContent='Lütfen önce tarih ve saat seçin.';return}const name=document.getElementById('name').value.trim(),phone=document.getElementById('phone').value.trim();if(!name||!phone)return;
-try{const q=query(collection(db,'appointments'),where('date','==',selectedDate),where('time','==',selectedTime));const snap=await getDocs(q);if(!snap.empty){msg.className='msg error';msg.textContent='⚠️ Bu saat az önce doldu. Lütfen başka bir saat seçin.';await loadTimes();return}
-await addDoc(collection(db,'appointments'),{name,phone,date:selectedDate,time:selectedTime,service:'Saç Sakal',price:700,status:'Bekliyor',createdAt:serverTimestamp()});
-msg.className='msg success';msg.textContent='✓ Randevunuz oluşturuldu. Yönetici onayından sonra kesinleşecektir.';document.getElementById('form').reset();selectedTime='';document.querySelectorAll('.time').forEach(x=>x.classList.remove('active'));await loadTimes()
-}catch(err){console.error(err);msg.className='msg error';msg.textContent='Randevu oluşturulamadı. Lütfen tekrar deneyin.'}});
+const app=initializeApp(firebaseConfig), db=getFirestore(app);
+const datesEl=document.querySelector("#dates"), timesEl=document.querySelector("#times");
+const selectedDateLabel=document.querySelector("#selectedDateLabel"), bookBtn=document.querySelector("#bookBtn");
+const nameEl=document.querySelector("#name"), phoneEl=document.querySelector("#phone"), message=document.querySelector("#message");
+const modal=document.querySelector("#modal"), sumDate=document.querySelector("#sumDate"), sumTime=document.querySelector("#sumTime");
+const confirmBtn=document.querySelector("#confirmBtn");
+const times = Array.from({length:19},(_,i)=>`${String(10+Math.floor(i/2)).padStart(2,"0")}:${i%2?"30":"00"}`);
+let selectedDate="", selectedTime="", busy=new Set();
+
+function fmt(iso){
+ const d=new Date(iso+"T12:00:00");
+ return {day:d.toLocaleDateString("tr-TR",{weekday:"short"}).replace(".","").toUpperCase(), num:d.getDate(), month:d.toLocaleDateString("tr-TR",{month:"short"}).replace(".","").toUpperCase()};
+}
+function dateIso(d){return d.toISOString().slice(0,10)}
+function buildDates(){
+ const today=new Date(); today.setHours(12,0,0,0);
+ for(let i=0;i<14;i++){
+   const d=new Date(today); d.setDate(today.getDate()+i);
+   const iso=dateIso(d), f=fmt(iso);
+   const b=document.createElement("button"); b.className="date-card";
+   b.innerHTML=`<span>${i===0?"BUGÜN":f.day}</span><strong>${f.num}</strong><small>${f.month}</small>`;
+   b.onclick=()=>selectDate(iso,b); datesEl.appendChild(b);
+ }
+ datesEl.querySelector(".date-card").click();
+}
+async function loadBusy(){
+ busy.clear();
+ const q=query(collection(db,"appointments"),where("date","==",selectedDate));
+ const snap=await getDocs(q);
+ snap.forEach(x=>{const d=x.data(); if(d.status!=="İptal") busy.add(d.time)});
+}
+async function selectDate(iso,btn){
+ selectedDate=iso; selectedTime="";
+ document.querySelectorAll(".date-card").forEach(x=>x.classList.remove("active")); btn.classList.add("active");
+ const f=fmt(iso); selectedDateLabel.textContent=`${f.day} • ${f.num} ${f.month}`;
+ timesEl.innerHTML='<div class="loading">Saatler hazırlanıyor…</div>';
+ try{await loadBusy(); renderTimes()}catch(e){timesEl.innerHTML='<div class="empty">Saatler yüklenemedi. İnternet bağlantınızı kontrol edin.</div>'}
+ updateButton();
+}
+function renderTimes(){
+ timesEl.innerHTML="";
+ times.forEach(t=>{
+  const b=document.createElement("button"); b.className="time-btn";
+  if(busy.has(t)){b.disabled=true;b.classList.add("full");b.innerHTML=`${t}<small>Dolu</small>`}
+  else{b.textContent=t;b.onclick=()=>{document.querySelectorAll(".time-btn").forEach(x=>x.classList.remove("active"));b.classList.add("active");selectedTime=t;updateButton()}}
+  timesEl.appendChild(b);
+ });
+}
+function updateButton(){
+ bookBtn.disabled=!(selectedDate&&selectedTime&&nameEl.value.trim()&&phoneEl.value.trim());
+}
+[nameEl,phoneEl].forEach(x=>x.addEventListener("input",updateButton));
+bookBtn.onclick=()=>{
+ if(bookBtn.disabled)return;
+ const f=fmt(selectedDate); sumDate.textContent=`${f.num} ${f.month} ${new Date(selectedDate+"T12:00:00").getFullYear()}`;
+ sumTime.textContent=selectedTime; modal.classList.remove("hidden");
+};
+document.querySelector("#closeModal").onclick=()=>modal.classList.add("hidden");
+document.querySelector(".modal-backdrop").onclick=()=>modal.classList.add("hidden");
+
+confirmBtn.onclick=async()=>{
+ confirmBtn.disabled=true; confirmBtn.innerHTML="KONTROL EDİLİYOR…";
+ message.textContent="";
+ try{
+  const q=query(collection(db,"appointments"),where("date","==",selectedDate),where("time","==",selectedTime));
+  const snap=await getDocs(q);
+  const active=snap.docs.some(d=>d.data().status!=="İptal");
+  if(active){modal.classList.add("hidden");message.textContent="⚠ Bu saat az önce doldu. Lütfen başka bir saat seçin.";await loadBusy();renderTimes();return;}
+  await addDoc(collection(db,"appointments"),{
+    name:nameEl.value.trim(), phone:phoneEl.value.trim(), date:selectedDate,time:selectedTime,
+    service:"Saç Sakal",price:700,status:"Bekliyor",createdAt:serverTimestamp()
+  });
+  modal.classList.add("hidden");
+  message.innerHTML="✓ Randevunuz başarıyla oluşturuldu. <strong>Onay durumu: Bekliyor</strong>";
+  message.classList.add("success");
+  busy.add(selectedTime); renderTimes();
+  selectedTime=""; updateButton();
+ }catch(e){message.textContent="Randevu oluşturulamadı. Lütfen tekrar deneyin."}
+ finally{confirmBtn.disabled=false;confirmBtn.innerHTML="RANDEVUYU ONAYLA <span>✓</span>"}
+};
 buildDates();
-</script></body></html>
+</script>
+</body>
+</html>

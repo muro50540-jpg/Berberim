@@ -1,26 +1,80 @@
-<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Yönetici Paneli</title><link rel="stylesheet" href="style.css"></head>
-<body><main class="admin"><header><a href="index.html" class="back">‹</a><div><b>KADİR PAK HAİR STÜDİO</b><small>YÖNETİCİ PANELİ</small></div></header>
-<section id="login" class="panel"><h2>Yönetici Girişi</h2><input id="email" type="email" placeholder="E-posta"><input id="password" type="password" placeholder="Şifre"><button id="loginBtn" class="btn primary">GİRİŞ YAP</button><div id="loginMsg" class="msg"></div></section>
-<section id="dashboard" hidden><div class="admin-top"><div><h2>Randevular</h2><p id="stats"></p></div><button id="logout" class="btn secondary">ÇIKIŞ</button></div><div id="appointments" class="appointments"></div></section></main>
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Yönetici | KADİR PAK HAİR STÜDİO</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="admin-shell">
+<header class="topbar admin-top">
+  <a class="back" href="index.html">←</a>
+  <div><div class="mini-brand">KADİR PAK</div><div class="mini-sub">YÖNETİCİ PANELİ</div></div>
+  <button id="logout" class="logout">ÇIKIŞ</button>
+</header>
+
+<main class="admin-main">
+  <section class="admin-hero">
+    <div><span class="section-kicker">YÖNETİM</span><h1>Randevular</h1><p>Günün ve yaklaşan randevularını tek ekrandan yönet.</p></div>
+    <div class="stat"><small>TOPLAM</small><strong id="count">0</strong></div>
+  </section>
+
+  <section id="loginCard" class="login-card">
+    <span class="section-kicker">YÖNETİCİ GİRİŞİ</span>
+    <h2>Paneli açmak için giriş yapın.</h2>
+    <input id="email" type="email" placeholder="E-posta">
+    <input id="password" type="password" placeholder="Şifre">
+    <button id="login" class="primary-btn wide">GİRİŞ YAP <span>→</span></button>
+    <p id="loginMsg" class="message"></p>
+  </section>
+
+  <section id="panel" class="hidden">
+    <div class="filters">
+      <button id="todayBtn" class="filter active">BUGÜN</button>
+      <button id="allBtn" class="filter">TÜM RANDEVULAR</button>
+    </div>
+    <div id="list" class="appointment-list"></div>
+  </section>
+</main>
+</div>
+
 <script type="module">
-import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import {getAuth,signInWithEmailAndPassword,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import {getFirestore,collection,query,orderBy,onSnapshot,doc,updateDoc,deleteDoc} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-const firebaseConfig = {
-  apiKey: "AIzaSyAKrffq7wJ0mDtPdsShYworqCIRYkR2okM",
-  authDomain: "berberim-83c47.firebaseapp.com",
-  projectId: "berberim-83c47",
-  storageBucket: "berberim-83c47.firebasestorage.app",
-  messagingSenderId: "235586545993",
-  appId: "1:235586545993:web:c05d6500909c27f4f81298",
-  measurementId: "G-CBR04D6NZ6"
-};
-const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);let unsub=null;
-const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-document.getElementById('loginBtn').onclick=async()=>{try{await signInWithEmailAndPassword(auth,email.value,password.value)}catch(e){loginMsg.className='msg error';loginMsg.textContent='E-posta veya şifre hatalı.'}};
-logout.onclick=()=>signOut(auth);
-onAuthStateChanged(auth,user=>{login.hidden=!!user;dashboard.hidden=!user;if(user)listen()});
-function listen(){if(unsub)unsub();const q=query(collection(db,'appointments'),orderBy('date'));unsub=onSnapshot(q,snap=>{let rows=snap.docs.map(d=>({id:d.id,...d.data()}));rows.sort((a,b)=>(a.date+' '+a.time).localeCompare(b.date+' '+b.time));stats.textContent=rows.length+' randevu';appointments.innerHTML=rows.length?rows.map(render).join(''):'<div class="empty">Henüz randevu yok.</div>';bind()})}
-function render(a){return `<article class="appt"><div class="appt-main"><strong>${esc(a.name)}</strong><span>📅 ${esc(a.date)} &nbsp; 🕐 ${esc(a.time)}</span><span>✂️ ${esc(a.service||'Saç Sakal')} · ₺${a.price||700}</span><span>📞 ${esc(a.phone)}</span></div><div class="actions"><select data-id="${a.id}" class="status"><option ${a.status==='Bekliyor'?'selected':''}>Bekliyor</option><option ${a.status==='Onaylandı'?'selected':''}>Onaylandı</option><option ${a.status==='Tamamlandı'?'selected':''}>Tamamlandı</option><option ${a.status==='İptal'?'selected':''}>İptal</option></select><button class="danger delete" data-id="${a.id}">SİL</button></div></article>`}
-function bind(){document.querySelectorAll('.status').forEach(s=>s.onchange=async()=>{try{await updateDoc(doc(db,'appointments',s.dataset.id),{status:s.value,statusUpdatedAt:new Date()})}catch(e){alert('Randevu durumu kaydedilemedi. Firebase bağlantısını ve Firestore kurallarını kontrol edin.');console.error(e)}});document.querySelectorAll('.delete').forEach(b=>b.onclick=async()=>{if(confirm('Bu randevu silinsin mi?'))try{await deleteDoc(doc(db,'appointments',b.dataset.id))}catch(e){alert('Silinemedi.')}})}
-</script></body></html>
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {getFirestore,collection,getDocs,query,orderBy,doc,updateDoc,deleteDoc} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+const firebaseConfig={apiKey:"AIzaSyAKrffq7wJ0mDtPdsShYworqCIRYkR2okM",authDomain:"berberim-83c47.firebaseapp.com",projectId:"berberim-83c47",storageBucket:"berberim-83c47.firebasestorage.app",messagingSenderId:"235586545993",appId:"1:235586545993:web:c05d6500909c27f4f81298",measurementId:"G-CBR04D6NZ6"};
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+const loginCard=document.querySelector("#loginCard"),panel=document.querySelector("#panel"),list=document.querySelector("#list"),count=document.querySelector("#count");
+let all=[],mode="today";
+const login=async()=>{try{await signInWithEmailAndPassword(auth,email.value,password.value);loginMsg.textContent=""}catch(e){loginMsg.textContent="E-posta veya şifre hatalı."}};
+document.querySelector("#login").onclick=login;
+document.querySelector("#logout").onclick=()=>signOut(auth);
+document.querySelector("#todayBtn").onclick=()=>{mode="today";document.querySelector("#todayBtn").classList.add("active");document.querySelector("#allBtn").classList.remove("active");render()};
+document.querySelector("#allBtn").onclick=()=>{mode="all";document.querySelector("#allBtn").classList.add("active");document.querySelector("#todayBtn").classList.remove("active");render()};
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function prettyDate(x){const d=new Date(x+"T12:00:00");return d.toLocaleDateString("tr-TR",{day:"2-digit",month:"long",year:"numeric"})}
+async function load(){const snap=await getDocs(query(collection(db,"appointments"),orderBy("date"));all=snap.docs.map(x=>({id:x.id,...x.data()}));all.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));render()}
+function render(){
+ const today=new Date().toISOString().slice(0,10);
+ const data=mode==="today"?all.filter(x=>x.date===today):all;
+ count.textContent=data.length;
+ if(!data.length){list.innerHTML='<div class="empty-card"><div>✦</div><h3>Randevu bulunmuyor</h3><p>Seçili görünümde henüz randevu yok.</p></div>';return}
+ list.innerHTML=data.map(x=>`<article class="appt ${x.status==="İptal"?"cancelled":""}">
+  <div class="appt-date"><strong>${esc(x.time)}</strong><span>${prettyDate(x.date)}</span></div>
+  <div class="appt-person"><strong>${esc(x.name)}</strong><span>${esc(x.phone)}</span></div>
+  <div class="appt-service"><span>${esc(x.service||"Saç Sakal")}</span><strong>₺${x.price||700}</strong></div>
+  <div class="appt-actions">
+   <select data-id="${x.id}" class="status status-${(x.status||"Bekliyor").replaceAll("ı","i").replaceAll("İ","I")}">
+    ${["Bekliyor","Onaylandı","Tamamlandı","İptal"].map(s=>`<option ${x.status===s?"selected":""}>${s}</option>`).join("")}
+   </select>
+   <button class="delete" data-delete="${x.id}">Sil</button>
+  </div>
+ </article>`).join("");
+ list.querySelectorAll("select").forEach(s=>s.onchange=async()=>{await updateDoc(doc(db,"appointments",s.dataset.id),{status:s.value,statusUpdatedAt:new Date()});const a=all.find(x=>x.id===s.dataset.id);if(a)a.status=s.value;render()});
+ list.querySelectorAll("[data-delete]").forEach(b=>b.onclick=async()=>{if(confirm("Bu randevuyu silmek istediğinize emin misiniz?")){await deleteDoc(doc(db,"appointments",b.dataset.delete));all=all.filter(x=>x.id!==b.dataset.delete);render()}});
+}
+onAuthStateChanged(auth,u=>{if(u){loginCard.classList.add("hidden");panel.classList.remove("hidden");load()}else{loginCard.classList.remove("hidden");panel.classList.add("hidden")}});
+</script>
+</body>
+</html>
