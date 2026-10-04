@@ -1,0 +1,35 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Randevu | KADİR PAK HAİR STÜDİO</title><link rel="stylesheet" href="style.css"></head>
+<body><main class="booking"><header><a href="index.html" class="back">‹</a><div><b>KADİR PAK HAİR STÜDİO</b><small>RANDEVU OLUŞTUR</small></div></header>
+<section class="selected"><div><strong id="serviceName">Saç Sakal</strong><span>30 dk</span></div><b>₺700</b></section>
+<h3>TARİH SEÇİMİ</h3><div id="dates" class="dates"></div>
+<h3>SAAT SEÇİMİ</h3><p id="slotInfo" class="hint">Müsait saatler yükleniyor…</p><div id="times" class="times"></div>
+<h3>BİLGİLERİNİZ</h3><form id="form"><input id="name" required placeholder="Ad Soyad"><input id="phone" required inputmode="tel" placeholder="Telefon"><button class="btn primary" type="submit">RANDEVUYU OLUŞTUR</button></form>
+<div id="msg" class="msg" role="alert"></div></main>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import {getFirestore,collection,query,where,getDocs,addDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyAKrffq7wJ0mDtPdsShYworqCIRYkR2okM",
+  authDomain: "berberim-83c47.firebaseapp.com",
+  projectId: "berberim-83c47",
+  storageBucket: "berberim-83c47.firebasestorage.app",
+  messagingSenderId: "235586545993",
+  appId: "1:235586545993:web:c05d6500909c27f4f81298",
+  measurementId: "G-CBR04D6NZ6"
+};
+const app=initializeApp(firebaseConfig),db=getFirestore(app); let selectedDate='',selectedTime='';
+const pad=n=>String(n).padStart(2,'0');
+function dateKey(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function trDate(d){return new Intl.DateTimeFormat('tr-TR',{weekday:'short',day:'2-digit',month:'short'}).format(d)}
+function buildDates(){const el=document.getElementById('dates'); for(let i=0;i<14;i++){let d=new Date();d.setHours(12);d.setDate(d.getDate()+i);let key=dateKey(d);let b=document.createElement('button');b.type='button';b.className='date';b.innerHTML='<b>'+d.getDate()+'</b><span>'+trDate(d).split(' ')[0]+'</span>';b.onclick=()=>selectDate(key,b);el.appendChild(b);} selectDate(dateKey(new Date()),el.firstChild)}
+async function selectDate(key,btn){selectedDate=key;document.querySelectorAll('.date').forEach(x=>x.classList.remove('active'));btn.classList.add('active');await loadTimes()}
+const slots=['10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30','19:00'];
+async function loadTimes(){const el=document.getElementById('times');el.innerHTML='';document.getElementById('slotInfo').textContent='Müsait saatler yükleniyor…';
+try{const q=query(collection(db,'appointments'),where('date','==',selectedDate));const snap=await getDocs(q);const taken=new Set(snap.docs.map(d=>d.data().time));slots.forEach(t=>{const b=document.createElement('button');b.type='button';b.className='time '+(taken.has(t)?'full':'');b.textContent=t;taken.has(t)?(b.disabled=true,b.title='Bu saat dolu'):(b.onclick=()=>{selectedTime=t;document.querySelectorAll('.time').forEach(x=>x.classList.remove('active'));b.classList.add('active')});el.appendChild(b)});document.getElementById('slotInfo').textContent=taken.size?'Dolu saatler otomatik kapatıldı.':'Bugün tüm saatler müsait.'}catch(e){console.error(e);document.getElementById('slotInfo').textContent='Saatler yüklenemedi. Lütfen tekrar deneyin.'}}
+document.getElementById('form').addEventListener('submit',async e=>{e.preventDefault();const msg=document.getElementById('msg');msg.className='msg';msg.textContent='';if(!selectedDate||!selectedTime){msg.className='msg error';msg.textContent='Lütfen önce tarih ve saat seçin.';return}const name=document.getElementById('name').value.trim(),phone=document.getElementById('phone').value.trim();if(!name||!phone)return;
+try{const q=query(collection(db,'appointments'),where('date','==',selectedDate),where('time','==',selectedTime));const snap=await getDocs(q);if(!snap.empty){msg.className='msg error';msg.textContent='⚠️ Bu saat az önce doldu. Lütfen başka bir saat seçin.';await loadTimes();return}
+await addDoc(collection(db,'appointments'),{name,phone,date:selectedDate,time:selectedTime,service:'Saç Sakal',price:700,status:'Bekliyor',createdAt:serverTimestamp()});
+msg.className='msg success';msg.textContent='✓ Randevunuz oluşturuldu. Yönetici onayından sonra kesinleşecektir.';document.getElementById('form').reset();selectedTime='';document.querySelectorAll('.time').forEach(x=>x.classList.remove('active'));await loadTimes()
+}catch(err){console.error(err);msg.className='msg error';msg.textContent='Randevu oluşturulamadı. Lütfen tekrar deneyin.'}});
+buildDates();
+</script></body></html>
