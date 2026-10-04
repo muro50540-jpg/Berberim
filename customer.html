@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Randevu • KADİR PAK HAİR STÜDİO</title><link rel="stylesheet" href="style.css">
+</head>
+<body class="booking-body">
+<header class="booking-nav"><a href="index.html" class="back">‹</a><div class="brand">KADİR PAK <span>HAİR STÜDİO</span></div></header>
+<main class="booking">
+<section>
+<div class="section-title">HİZMET SEÇİMİ</div>
+<div class="service-list" id="services">
+<button class="service active" data-service="Saç Sakal" data-duration="30" data-price="700"><span class="person">♙</span><span><b>Saç Sakal</b><small>30 dk</small></span><strong>₺700</strong></button>
+<button class="service" data-service="Saç Kesimi" data-duration="30" data-price="400"><span class="person">♙</span><span><b>Saç Kesimi</b><small>30 dk</small></span><strong>₺400</strong></button>
+<button class="service" data-service="Sakal" data-duration="20" data-price="300"><span class="person">♙</span><span><b>Sakal</b><small>20 dk</small></span><strong>₺300</strong></button>
+</div>
+</section>
+<section>
+<div class="section-title">BERBER SEÇİMİ</div>
+<div class="barber-list"><button class="barber active" data-barber="Kadir Pak">Kadir Pak <small>Uzman Berber</small></button></div>
+</section>
+<section>
+<div class="section-title">TARİH SEÇİMİ</div>
+<div class="dates" id="dates"></div>
+</section>
+<section>
+<div class="section-title">SAAT SEÇİMİ</div>
+<div class="times" id="times"></div>
+</section>
+<section class="customer-card">
+<div class="section-title">BİLGİLERİNİZ</div>
+<input id="name" placeholder="Ad Soyad">
+<input id="phone" placeholder="Telefon" inputmode="tel">
+<button id="openConfirm" class="main-btn">Randevuyu Onayla <span>→</span></button>
+<div id="msg"></div>
+</section>
+</main>
+
+<div class="modal-backdrop" id="modal">
+<div class="confirm">
+<button class="close" id="close">×</button>
+<h2>Randevuyu onayla</h2>
+<p>Bu randevuyu oluşturmak istiyor musunuz?</p>
+<div id="summary"></div>
+<div class="modal-actions"><button id="cancel" class="cancel">Vazgeç</button><button id="confirm" class="confirm-btn">Onayla</button></div>
+</div></div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import {getFirestore,collection,addDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+const firebaseConfig={apiKey:"AIzaSyAKrffq7wJ0mDtPdsShYworqCIRYkR2okM",authDomain:"berberim-83c47.firebaseapp.com",projectId:"berberim-83c47",storageBucket:"berberim-83c47.firebasestorage.app",messagingSenderId:"235586545993",appId:"1:235586545993:web:c05d6500909c27f4f81298",measurementId:"G-CBR04D6NZ6"};
+const db=getFirestore(initializeApp(firebaseConfig));
+let selectedService={service:"Saç Sakal",duration:30,price:700},selectedBarber="Kadir Pak",selectedDate="",selectedTime="";
+const dates=document.querySelector("#dates"),times=document.querySelector("#times");
+const trDays=["Paz","Pzt","Sal","Çar","Per","Cum","Cmt"];
+for(let i=0;i<14;i++){let d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()+i);let b=document.createElement("button");b.className="date";b.innerHTML=`<small>${trDays[d.getDay()]}</small><b>${d.getDate()}</b>`;b.dataset.date=d.toISOString().slice(0,10);b.onclick=()=>{document.querySelectorAll(".date").forEach(x=>x.classList.remove("active"));b.classList.add("active");selectedDate=b.dataset.date;renderTimes()};dates.appendChild(b)}
+dates.firstChild.click();
+document.querySelectorAll(".service").forEach(b=>b.onclick=()=>{document.querySelectorAll(".service").forEach(x=>x.classList.remove("active"));b.classList.add("active");selectedService={service:b.dataset.service,duration:+b.dataset.duration,price:+b.dataset.price}});
+document.querySelectorAll(".barber").forEach(b=>b.onclick=()=>{document.querySelectorAll(".barber").forEach(x=>x.classList.remove("active"));b.classList.add("active");selectedBarber=b.dataset.barber});
+function renderTimes(){times.innerHTML="";for(let h=9;h<=19;h++){for(let m of [0,30]){if(h===19&&m===30)continue;let t=`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`,b=document.createElement("button");b.className="time available";b.innerHTML=`<b>${t}</b>`;b.onclick=()=>{document.querySelectorAll(".time").forEach(x=>x.classList.remove("active"));b.classList.add("active");selectedTime=t};times.appendChild(b)}}}
+renderTimes();
+const modal=document.querySelector("#modal");function close(){modal.classList.remove("show")}["close","cancel"].forEach(id=>document.querySelector("#"+id).onclick=close);
+document.querySelector("#openConfirm").onclick=()=>{if(!selectedDate||!selectedTime||!name.value.trim()||!phone.value.trim()){msg.className="notice error";msg.textContent="Lütfen ad, telefon, tarih ve saat seçin.";return}summary.innerHTML=`<div><b>${selectedService.service}</b> (${selectedService.duration} dk)</div><div>Ücret: ₺${selectedService.price}</div><div>Usta: ${selectedBarber}</div><div>${new Date(selectedDate+"T00:00:00").toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric",weekday:"long"})}, ${selectedTime}</div>`;modal.classList.add("show")};
+document.querySelector("#confirm").onclick=async()=>{const btn=document.querySelector("#confirm");btn.disabled=true;btn.textContent="Kaydediliyor…";try{await addDoc(collection(db,"appointments"),{service:selectedService.service,duration:selectedService.duration,price:selectedService.price,barber:selectedBarber,date:selectedDate,time:selectedTime,name:name.value.trim(),phone:phone.value.trim(),status:"Bekliyor",createdAt:serverTimestamp()});close();msg.className="notice success";msg.textContent="Randevunuz başarıyla oluşturuldu.";window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"})}catch(e){msg.className="notice error";msg.textContent="Randevu kaydedilemedi. Lütfen tekrar deneyin."}btn.disabled=false;btn.textContent="Onayla"};
+</script>
+</body></html>
