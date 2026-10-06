@@ -9,9 +9,6 @@ service cloud.firestore {
       allow read: if anonymous();
       allow create: if anonymous()
         && request.resource.data.taken == true
-        && request.resource.data.date is string
-        && request.resource.data.time is string
-        && request.resource.data.appointmentId is string
         && request.resource.data.createdBy == request.auth.uid;
       allow update, delete: if admin();
     }
@@ -19,16 +16,13 @@ service cloud.firestore {
     match /appointments/{id} {
       allow create: if anonymous()
         && request.resource.data.status == 'Bekliyor'
-        && request.resource.data.name is string
-        && request.resource.data.phone is string
-        && request.resource.data.date is string
-        && request.resource.data.time is string
-        && request.resource.data.service is string
-        && request.resource.data.serviceId is string
-        && request.resource.data.price is number
-        && request.resource.data.slotId is string
         && request.resource.data.createdBy == request.auth.uid;
       allow read, update, delete: if admin();
+    }
+
+    match /settings/{id} {
+      allow read: if anonymous() || admin();
+      allow create, update, delete: if admin();
     }
   }
 }
