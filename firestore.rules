@@ -6,7 +6,7 @@ service cloud.firestore {
     function anonymous() { return signedIn() && request.auth.token.firebase.sign_in_provider == 'anonymous'; }
 
     match /slots/{id} {
-      allow read: if true;
+      allow read: if anonymous();
       allow create: if anonymous()
         && request.resource.data.taken == true
         && request.resource.data.date is string
