@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Yönetici | KADİR PAK HAİR STÜDİO</title>
+<link rel="stylesheet" href="style.css">
+<style>
+/* Randevu kartı yenileme */
+.appt{display:grid;grid-template-columns:105px minmax(150px,1.2fr) minmax(150px,1fr);gap:14px;align-items:stretch;padding:18px;margin:12px 0;border:1px solid rgba(0,0,0,.08);border-radius:18px;background:#fff;box-shadow:0 6px 22px rgba(0,0,0,.06)}
+.apptdate{display:flex;flex-direction:column;justify-content:center;align-items:center;background:#f6f3ef;border-radius:14px;padding:12px}
+.apptdate strong{font-size:26px;line-height:1.1}
+.apptdate span{font-size:12px;margin-top:6px;opacity:.7;text-align:center}
+.apptperson,.apptservice{display:flex;flex-direction:column;justify-content:center;min-width:0}
+.apptperson strong{font-size:20px;line-height:1.2;word-break:break-word}
+.apptperson span{font-size:13px;margin-top:6px;opacity:.7}
+.apptservice{padding:13px 15px;border-radius:14px;background:#f8f8f8}
+.apptservice .service-label{font-size:10px;letter-spacing:.12em;opacity:.6;margin-bottom:7px}
+.apptservice span{font-weight:700;font-size:16px;line-height:1.25}
+.apptservice strong{font-size:14px;margin-top:7px}
+.appt-actions{grid-column:1/-1;display:grid;grid-template-columns:minmax(180px,1fr) minmax(160px,220px) auto auto;gap:9px;align-items:center;padding-top:5px;border-top:1px solid rgba(0,0,0,.07)}
+.status-buttons{display:flex;gap:7px;flex-wrap:wrap}
+.status-btn{border:1px solid rgba(0,0,0,.12);background:#fff;border-radius:999px;padding:9px 13px;font-weight:700;font-size:12px;cursor:pointer}
+.status-btn.active{box-shadow:0 0 0 2px rgba(0,0,0,.08);background:#eee}
+.status-btn[data-status="Bekliyor"].active{background:#fff3cd}
+.status-btn[data-status="Onaylandı"].active{background:#dff4e5}
+.status-btn[data-status="Tamamlandı"].active{background:#e4ecff}
+.status-btn[data-status="İptal"].active{background:#ffe1e1}
+.payment-select{min-height:40px;border:1px solid rgba(0,0,0,.12);border-radius:10px;padding:0 10px;background:#fff}
+.wa,.del{min-height:40px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;padding:0 14px;text-decoration:none;border:1px solid rgba(0,0,0,.1);background:#fff;cursor:pointer;font-weight:700}
+.wa{background:#edf9f0}.del{background:#fff1f1}
+.calendar-item{display:grid!important;grid-template-columns:75px 1fr auto;gap:12px;align-items:center;padding:12px 14px!important;margin:7px 0;border-radius:13px;background:#f8f8f8}
+.calendar-item b{font-size:18px}.calendar-item span{display:flex;flex-direction:column;gap:3px}.calendar-item em{font-style:normal;font-size:11px;font-weight:700;padding:6px 9px;border-radius:999px;background:#eee}
+@media(max-width:760px){
+ .appt{grid-template-columns:78px 1fr;gap:10px;padding:12px}
+ .apptservice{grid-column:1/-1}
+ .appt-actions{grid-template-columns:1fr 1fr}
+ .status-buttons{grid-column:1/-1}
+ .payment-select{width:100%}
+ .wa,.del{width:100%}
+ .calendar-item{grid-template-columns:60px 1fr!important}
+ .calendar-item em{grid-column:2}
+}
+</style>
+</head>
+<body>
+<header class="adminbar"><div class="wrap adminbarin">
+<a class="secondary" href="customer.html">← MÜŞTERİ EKRANI</a>
+<div class="adminbrand">KADİR PAK HAİR STÜDİO</div>
+<button id="settings" class="logout hidden" type="button">İŞLETME AYARLARI</button>
+<button id="serviceBtn" class="logout hidden" type="button">HİZMETLER</button>
+<button id="logout" class="logout hidden" type="button">ÇIKIŞ</button>
+</div></header>
+
+<main class="wrap" style="padding:20px 0 45px">
+<section id="login" class="login-card">
+<span class="kicker">YÖNETİCİ GİRİŞİ</span><h2>Panele giriş yapın</h2>
+<p class="login-help">Yalnızca yetkili hesapla giriş yapılabilir.</p>
+<input id="email" class="input" autocomplete="username" placeholder="E-posta">
+<input id="pass" class="input" autocomplete="current-password" type="password" placeholder="Şifre">
+<button id="loginBtn" class="primary-btn wide" type="button">GİRİŞ YAP →</button>
+<button id="forgotBtn" class="link-btn" type="button">Şifremi unuttum</button>
+<p id="loginMsg" class="message"></p>
+</section>
+
+<section id="panel" class="hidden">
+<div class="stats">
+<div class="metric"><small>TOPLAM CİRO</small><strong id="rev">₺0</strong><span>Tamamlanan</span></div>
+<div class="metric"><small>BU AY</small><strong id="mrev">₺0</strong><span>Tamamlanan</span></div>
+<div class="metric"><small>AKTİF</small><strong id="active">0</strong><span>Bekleyen + onaylı</span></div>
+<div class="metric"><small>BUGÜN</small><strong id="todayCount">0</strong><span>Randevu</span></div>
+</div>
+<div class="report-strip">
+<div><small>BUGÜN CİRO</small><strong id="todayRev">₺0</strong></div>
+<div><small>NAKİT</small><strong id="cash">₺0</strong></div>
+<div><small>KART</small><strong id="card">₺0</strong></div>
+<div><small>ORT. ZİYARET ARALIĞI</small><strong id="interval">—</strong></div>
+</div>
+<div class="two">
+<section class="card"><span class="kicker">MÜŞTERİLER</span><h2>En çok gelenler</h2><div id="customers"></div></section>
+<section class="card"><span class="kicker">YAKLAŞAN</span><h2>Sonraki randevu</h2><div id="forecast"></div></section>
+</div>
+<section class="card">
+<div class="section-head-row"><div><span class="kicker">TAKVİM</span><h2>Randevu takvimi</h2></div>
+<input id="calendarDate" class="input compact-input" type="date"></div>
+<div id="calendarDay" class="calendar-day"></div>
+</section>
+<section class="card"><span class="kicker">HİZMETLER</span><h2>Tercihler</h2><div id="services" class="service-grid"></div></section>
+<div class="filters">
+<button class="filter active" data-m="today" type="button">BUGÜN</button>
+<button class="filter" data-m="month" type="button">BU AY</button>
+<button class="filter" data-m="all" type="button">TÜMÜ</button>
+<button class="filter" data-m="archive" type="button">ARŞİV</button>
+</div>
+<div id="list"></div>
+</section></main>
+
+<div id="serviceModal" class="modal hidden"><div class="backdrop"></div><div class="sheet service-sheet">
+<button id="serviceClose" class="close" type="button">×</button><span class="kicker">HİZMET YÖNETİMİ</span><h2>Hizmetler ve fiyatlar</h2>
+<p class="login-help">Hizmet adı, fiyat, süre ve aktiflik durumunu yönetin.</p><div id="serviceEditor"></div>
+<button id="addService" class="secondary wide" type="button">+ YENİ HİZMET EKLE</button>
+<button id="saveServices" class="primary-btn wide" type="button">DEĞİŞİKLİKLERİ KAYDET</button><p id="serviceMsg" class="message"></p>
+</div></div>
+
+<div id="settingsModal" class="modal hidden"><div class="backdrop"></div><div class="sheet service-sheet">
+<button id="settingsClose" class="close" type="button">×</button><span class="kicker">İŞLETME YÖNETİMİ</span><h2>Çalışma ve işletme ayarları</h2>
+<div class="settings-grid">
+<label>İşletme telefonu<input id="bizPhone" class="input" placeholder="05xxxxxxxxx"></label>
+<label>Adres<input id="bizAddress" class="input" placeholder="Adres"></label>
+<label>Google yorum linki<input id="reviewUrl" class="input" placeholder="Google yorum bağlantısı"></label>
+<label>Instagram<input id="instagram" class="input" placeholder="https://instagram.com/..."></label>
+<label class="full">Kampanya duyurusu<input id="campaign" class="input" placeholder="Örn. Bu hafta saç + sakal 550 TL"></label>
+</div>
+<h3>Çalışma saatleri</h3><div id="hoursEditor" class="hours-grid"></div>
+<h3>Kapalı / izin günleri</h3>
+<div class="closed-add"><input id="closedDate" class="input" type="date"><input id="closedReason" class="input" placeholder="Neden (isteğe bağlı)"><button id="addClosed" class="secondary" type="button">EKLE</button></div>
+<div id="closedList"></div><button id="saveSettings" class="primary-btn wide" type="button">AYARLARI KAYDET</button><p id="settingsMsg" class="message"></p>
+</div></div>
+
+<div id="passwordModal" class="modal hidden"><div class="backdrop"></div><div class="sheet service-sheet">
+<button id="passwordClose" class="close" type="button">×</button><span class="kicker">GÜVENLİK</span><h2>Şifre değiştir</h2>
+<input id="np" class="input" type="password" placeholder="Yeni şifre"><input id="np2" class="input" type="password" placeholder="Yeni şifre tekrar">
+<button id="savePass" class="primary-btn wide" type="button">ŞİFREYİ DEĞİŞTİR</button><p id="passMsg" class="message"></p>
+</div></div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut,updatePassword,sendPasswordResetEmail} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {getFirestore,collection,getDocs,doc,updateDoc,deleteDoc,runTransaction,getDoc,setDoc} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+const firebaseConfig={apiKey:"AIzaSyAKrffq7wJ0mDtPdsShYworqCIRYkR2okM",authDomain:"berberim-83c47.firebaseapp.com",projectId:"berberim-83c47",storageBucket:"berberim-83c47.firebasestorage.app",messagingSenderId:"235586545993",appId:"1:235586545993:web:c05d6500909c27f4f81298",measurementId:"G-CBR04D6NZ6"};
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=s=>document.querySelector(s),ADMIN="kadirpak@gmail.com";
+const defaultServices=[{id:"sac",name:"Sadece Saç",price:500,duration:30,icon:"✂",active:true},{id:"cocuk",name:"Çocuk Tıraşı",price:300,duration:30,icon:"👦",active:true},{id:"sac-sakal",name:"Saç + Sakal",price:600,duration:45,icon:"✂️",active:true},{id:"damat",name:"Damat Tıraşı",price:0,duration:90,icon:"🤵",active:false},{id:"fon",name:"Fön Çektirme",price:200,duration:30,icon:"💨",active:true}];
+const defaultHours={1:{open:true,start:"10:00",end:"00:00"},2:{open:true,start:"10:00",end:"00:00"},3:{open:true,start:"10:00",end:"00:00"},4:{open:true,start:"10:00",end:"00:00"},5:{open:true,start:"10:00",end:"00:00"},6:{open:true,start:"10:00",end:"00:00"},0:{open:false,start:"10:00",end:"00:00"}};
+let all=[],services=[],settings={hours:defaultHours,closedDates:[],businessPhone:"",address:"",reviewUrl:"",instagram:"",campaign:""},mode="today";
+const todayISO=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
+const month=()=>todayISO().slice(0,7),money=n=>"₺"+Number(n||0).toLocaleString("tr-TR"),nice=d=>d?new Date(d+"T12:00:00").toLocaleDateString("tr-TR",{day:"2-digit",month:"short",year:"numeric"}):"—";
+function mergeSettings(data){settings={...settings,...data,hours:{...defaultHours,...(data?.hours||{})},closedDates:Array.isArray(data?.closedDates)?data.closedDates:[]}}
+$("#loginBtn").onclick=async()=>{const email=$("#email").value.trim().toLowerCase(),pass=$("#pass").value;if(email!==ADMIN){$("#loginMsg").textContent="Bu hesap yönetici hesabı değil.";return}try{await signInWithEmailAndPassword(auth,email,pass)}catch(e){$("#loginMsg").textContent=e.code==="auth/too-many-requests"?"Çok fazla deneme yapıldı. Biraz sonra tekrar deneyin.":"E-posta veya şifre hatalı."}};
+$("#forgotBtn").onclick=async()=>{const email=$("#email").value.trim().toLowerCase();if(email!==ADMIN){$("#loginMsg").textContent="Önce yönetici e-postasını yazın.";return}try{await sendPasswordResetEmail(auth,email);$("#loginMsg").textContent="✓ Şifre sıfırlama e-postası gönderildi."}catch(e){$("#loginMsg").textContent="E-posta gönderilemedi."}};
+$("#logout").onclick=()=>signOut(auth);
+
+async function load(){const s=await getDocs(collection(db,"appointments"));all=s.docs.map(x=>({id:x.id,...x.data()}));await loadSettings();calc();render();renderCalendar($("#calendarDate").value||todayISO())}
+async function loadSettings(){const snap=await getDoc(doc(db,"settings","main"));if(snap.exists()){mergeSettings(snap.data());services=Array.isArray(snap.data().services)?snap.data().services.map(x=>({...x})):defaultServices.map(x=>({...x}))}else{services=defaultServices.map(x=>({...x}));await setDoc(doc(db,"settings","main"),{services,hours:defaultHours,closedDates:[],updatedAt:new Date()},{merge:true})}}
+
+function groups(){const g={};all.filter(x=>x.status!=="İptal").forEach(a=>{const k=(a.phone||a.name||"").replace(/\s/g,"").toLowerCase();if(k)(g[k]??=[]).push(a)});return g}
+function pred(a){const d=[...new Set(a.map(x=>x.date).filter(Boolean))].sort();if(d.length<2)return "Yeterli geçmiş yok";let sum=0;for(let i=1;i<d.length;i++)sum+=(new Date(d[i])-new Date(d[i-1]))/86400000;const x=new Date(d.at(-1)+"T12:00:00");x.setDate(x.getDate()+Math.max(1,Math.round(sum/(d.length-1))));return "≈ "+x.toLocaleDateString("tr-TR",{day:"2-digit",month:"short"})}
+function calc(){
+const done=all.filter(x=>x.status==="Tamamlandı"),todayA=all.filter(x=>x.date===todayISO()&&x.status!=="İptal");
+$("#rev").textContent=money(done.reduce((s,x)=>s+Number(x.price||0),0));
+$("#mrev").textContent=money(done.filter(x=>x.date?.startsWith(month())).reduce((s,x)=>s+Number(x.price||0),0));
+$("#active").textContent=all.filter(x=>["Bekliyor","Onaylandı"].includes(x.status)).length;
+$("#todayCount").textContent=todayA.length;
+const todayDone=done.filter(x=>x.date===todayISO());
+$("#todayRev").textContent=money(todayDone.reduce((s,x)=>s+Number(x.price||0),0));
+$("#cash").textContent=money(todayDone.filter(x=>x.payment==="Nakit").reduce((s,x)=>s+Number(x.price||0),0));
+$("#card").textContent=money(todayDone.filter(x=>x.payment==="Kredi Kartı").reduce((s,x)=>s+Number(x.price||0),0));
+const g=groups(),ints=[];Object.values(g).forEach(a=>{const d=[...new Set(a.map(x=>x.date).filter(Boolean))].sort();for(let i=1;i<d.length;i++)ints.push(Math.round((new Date(d[i])-new Date(d[i-1]))/86400000))});
+$("#interval").textContent=ints.length?Math.round(ints.reduce((a,b)=>a+b,0)/ints.length):"—";
+const r=Object.values(g).sort((a,b)=>b.length-a.length).slice(0,6);
+$("#customers").innerHTML=r.map((a,i)=>{const latest=[...a].sort((x,y)=>(y.date+y.time).localeCompare(x.date+x.time))[0];return `<div class="rank"><i>${i+1}</i><div><strong>${latest.name||"İsimsiz"}</strong><span>${a.length} ziyaret • son ${nice(latest.date)}</span></div><em>${pred(a)}</em></div>`}).join("")||'<div class="empty">Henüz müşteri yok.</div>';
+const sm={};all.filter(x=>x.status!=="İptal").forEach(x=>sm[x.service||"Belirtilmemiş"]=(sm[x.service||"Belirtilmemiş"]||0)+1);
+$("#services").innerHTML=Object.entries(sm).sort((a,b)=>b[1]-a[1]).map(x=>`<div class="service"><span class="main"><strong>${x[0]}</strong><small>Toplam tercih</small></span><b>${x[1]}</b></div>`).join("")||'<div class="empty">Henüz veri yok.</div>';
+const n=all.filter(x=>x.date>=todayISO()&&x.status!=="İptal").sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))[0];
+$("#forecast").innerHTML=n?`<strong>${n.name||"İsimsiz"}</strong><br>${nice(n.date)} • ${n.time||"--:--"}<br>${n.service||"Hizmet"}`:"Yaklaşan randevu yok."
+}
+
+function appointmentHtml(x){
+const pay=x.payment||"Ödeme bekliyor";
+const statuses=["Bekliyor","Onaylandı","Tamamlandı","İptal"];
+return `<article class="appt">
+<div class="apptdate"><strong>${x.time||"--:--"}</strong><span>${nice(x.date)}</span></div>
+<div class="apptperson"><strong>${x.name||"İsimsiz"}</strong><span>${x.phone||"Telefon yok"}</span></div>
+<div class="apptservice"><div class="service-label">YAPILACAK İŞLEM</div><span>${x.service||"Hizmet"}</span><strong>${money(x.price)} • ${x.duration||30} dk</strong></div>
+<div class="appt-actions">
+<div class="status-buttons">${statuses.map(s=>`<button type="button" class="status-btn ${x.status===s?"active":""}" data-status-id="${x.id}" data-status="${s}">${s}</button>`).join("")}</div>
+<select class="payment-select payment" data-pay="${x.id}">
+<option ${pay==="Nakit"?"selected":""}>Nakit</option>
+<option ${pay==="Kredi Kartı"?"selected":""}>Kredi Kartı</option>
+<option ${pay==="Ödeme bekliyor"?"selected":""}>Ödeme bekliyor</option>
+</select>
+<a class="wa" target="_blank" href="${x.phone?`https://wa.me/9${String(x.phone).replace(/\D/g,"").replace(/^0/,"")}?text=${encodeURIComponent("Merhaba "+(x.name||"")+", KADİR PAK HAİR STÜDİO randevunuz hakkında bilgi vermek için yazıyorum.")}`:"#"}">WhatsApp</a>
+<button class="del" data-del="${x.id}" type="button">Sil</button>
+</div></article>`
+}
+
+function render(){
+const t=todayISO(),m=month();let a=mode==="today"?all.filter(x=>x.date===t):mode==="month"?all.filter(x=>x.date?.startsWith(m)):mode==="archive"?all.filter(x=>x.date<t):all;
+a.sort((x,y)=>(x.date+x.time).localeCompare(y.date+y.time));
+$("#list").innerHTML=a.length?a.map(appointmentHtml).join(""):'<div class="empty">Bu görünümde randevu yok.</div>';
+document.querySelectorAll("[data-status-id]").forEach(b=>b.onclick=()=>changeStatus(b.dataset.statusId,b.dataset.status));
+document.querySelectorAll(".payment").forEach(s=>s.onchange=()=>changePayment(s.dataset.pay,s.value));
+document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>removeAppointment(b.dataset.del))
+}
+
+async function changeStatus(id,next){
+const item=all.find(a=>a.id===id);if(!item)return;
+try{
+if(next==="İptal"){
+await runTransaction(db,async tx=>{tx.update(doc(db,"appointments",id),{status:"İptal"});if(Array.isArray(item.slotIds))item.slotIds.forEach(id=>tx.delete(doc(db,"slots",id)));else if(item.slotId)tx.delete(doc(db,"slots",item.slotId))})
+}else if(item.status==="İptal"){
+await runTransaction(db,async tx=>{const ref=doc(db,"appointments",id),ids=Array.isArray(item.slotIds)?item.slotIds:(item.slotId?[item.slotId]:[]);for(const sid of ids){const slot=doc(db,"slots",sid),snap=await tx.get(slot);if(snap.exists()&&snap.data().taken)throw Error("SLOT_TAKEN")}for(const sid of ids){const slot=doc(db,"slots",sid);tx.set(slot,{date:item.date,time:item.time,taken:true,duration:ids.length*30,appointmentId:id,createdBy:item.createdBy||auth.currentUser.uid,createdAt:item.createdAt||null})}tx.update(ref,{status:next})})
+}else await updateDoc(doc(db,"appointments",id),{status:next});
+item.status=next;calc();render();renderCalendar($("#calendarDate").value)
+}catch(e){alert(e.message==="SLOT_TAKEN"?"Bu saat artık dolu.":"Randevu durumu güncellenemedi.");load()}
+}
+async function changePayment(id,payment){try{await updateDoc(doc(db,"appointments",id),{payment});const x=all.find(a=>a.id===id);if(x)x.payment=payment;calc()}catch(e){alert("Ödeme bilgisi kaydedilemedi.")}}
+async function removeAppointment(id){const item=all.find(a=>a.id===id);if(!confirm("Randevu silinsin ve saati tekrar boşaltılsın mı?"))return;try{await runTransaction(db,async tx=>{tx.delete(doc(db,"appointments",id));if(Array.isArray(item?.slotIds))item.slotIds.forEach(id=>tx.delete(doc(db,"slots",id)));else if(item?.slotId)tx.delete(doc(db,"slots",item.slotId))});all=all.filter(a=>a.id!==id);calc();render();renderCalendar($("#calendarDate").value)}catch(e){alert("Randevu silinemedi.")}}
+function renderCalendar(date){$("#calendarDate").value=date;const day=all.filter(x=>x.date===date&&x.status!=="İptal").sort((a,b)=>(a.time||"").localeCompare(b.time||""));$("#calendarDay").innerHTML=day.length?day.map(x=>`<div class="calendar-item"><b>${x.time}</b><span><strong>${x.name||"İsimsiz"}</strong>${x.service||""}</span><em>${x.status}</em></div>`).join(""):'<div class="empty">Bu gün için randevu yok.</div>'}
+[...document.querySelectorAll(".filter")].forEach(b=>b.onclick=()=>{document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));b.classList.add("active");mode=b.dataset.m;render()});
+$("#calendarDate").value=todayISO();$("#calendarDate").onchange=e=>renderCalendar(e.target.value);
+
+function renderServiceEditor(){$("#serviceEditor").innerHTML=services.map((x,i)=>`<div class="service-edit" data-i="${i}"><div class="service-edit-top"><strong>${i+1}. HİZMET</strong><label class="switch"><input type="checkbox" data-active ${x.active!==false?"checked":""}><span>Aktif</span></label></div><input class="input" data-name value="${String(x.name||"").replace(/"/g,"&quot;")}" placeholder="Hizmet adı"><div class="service-edit-row"><input class="input" data-price inputmode="decimal" value="${Number(x.price||0)}" placeholder="Fiyat"><input class="input" data-duration inputmode="numeric" value="${Number(x.duration||30)}" placeholder="Süre (dk)"></div><input class="input" data-icon maxlength="4" value="${x.icon||"✂"}" placeholder="İkon"><button type="button" class="del-service" data-del-service>HİZMETİ SİL</button></div>`).join("")}
+$("#serviceEditor").onclick=e=>{const b=e.target.closest("[data-del-service]");if(b){services.splice(Number(b.closest(".service-edit").dataset.i),1);renderServiceEditor()}};
+$("#addService").onclick=()=>{services.push({id:"h-"+Date.now(),name:"Yeni Hizmet",price:0,duration:30,icon:"✂",active:true});renderServiceEditor()};
+$("#saveServices").onclick=async()=>{const next=[...document.querySelectorAll(".service-edit")].map((box,i)=>({...services[i],name:box.querySelector("[data-name]").value.trim(),price:Number(String(box.querySelector("[data-price]").value).replace(",",".")),duration:Number(box.querySelector("[data-duration]").value)||30,icon:box.querySelector("[data-icon]").value.trim()||"✂",active:box.querySelector("[data-active]").checked}));if(next.some(x=>!x.name||!Number.isFinite(x.price)||x.price<0||x.duration<30)){alert("Hizmet adı, fiyat ve en az 30 dakika süre girin.");return}try{services=next;await setDoc(doc(db,"settings","main"),{services,updatedAt:new Date()},{merge:true});$("#serviceMsg").textContent="✓ Hizmetler kaydedildi."}catch(e){$("#serviceMsg").textContent="Kaydedilemedi."}};
+$("#serviceBtn").onclick=()=>{renderServiceEditor();$("#serviceMsg").textContent="";$("#serviceModal").classList.remove("hidden")};
+$("#serviceClose").onclick=()=>$("#serviceModal").classList.add("hidden");$("#serviceModal .backdrop").onclick=()=>$("#serviceModal").classList.add("hidden");
+
+const dayNames=["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"];
+function renderHours(){$("#hoursEditor").innerHTML=[1,2,3,4,5,6,0].map(d=>{const h=settings.hours[d]||defaultHours[d];return `<div class="hour-row"><b>${dayNames[d]}</b><label><input type="checkbox" data-open="${d}" ${h.open?"checked":""}> Açık</label><input class="input" data-start="${d}" type="time" value="${h.start}"><span>—</span><input class="input" data-end="${d}" type="time" value="${h.end==="00:00"?"00:00":h.end}"></div>`}).join("")}
+function renderClosed(){$("#closedList").innerHTML=settings.closedDates.length?settings.closedDates.sort().map((x,i)=>`<div class="closed-item"><span>${nice(x.date)}${x.reason?" • "+x.reason:""}</span><button class="del" data-close="${i}" type="button">Sil</button></div>`).join(""):'<div class="empty">Eklenmiş kapalı gün yok.</div>'}
+function openSettings(){$("#bizPhone").value=settings.businessPhone||"";$("#bizAddress").value=settings.address||"";$("#reviewUrl").value=settings.reviewUrl||"";$("#instagram").value=settings.instagram||"";$("#campaign").value=settings.campaign||"";renderHours();renderClosed();$("#settingsMsg").textContent="";$("#settingsModal").classList.remove("hidden")}
+$("#settings").onclick=openSettings;$("#settingsClose").onclick=()=>$("#settingsModal").classList.add("hidden");$("#settingsModal .backdrop").onclick=()=>$("#settingsModal").classList.add("hidden");
+$("#addClosed").onclick=()=>{const d=$("#closedDate").value;if(!d)return;settings.closedDates.push({date:d,reason:$("#closedReason").value.trim()});$("#closedReason").value="";renderClosed()};
+$("#closedList").onclick=e=>{const b=e.target.closest("[data-close]");if(b){settings.closedDates.splice(Number(b.dataset.close),1);renderClosed()}};
+$("#saveSettings").onclick=async()=>{const hours={};[1,2,3,4,5,6,0].forEach(d=>{let end=document.querySelector(`[data-end="${d}"]`).value||"00:00";hours[d]={open:document.querySelector(`[data-open="${d}"]`).checked,start:document.querySelector(`[data-start="${d}"]`).value,end}});settings={...settings,hours,businessPhone:$("#bizPhone").value.trim(),address:$("#bizAddress").value.trim(),reviewUrl:$("#reviewUrl").value.trim(),instagram:$("#instagram").value.trim(),campaign:$("#campaign").value.trim()};try{await setDoc(doc(db,"settings","main"),settings,{merge:true});$("#settingsMsg").textContent="✓ Ayarlar kaydedildi."}catch(e){$("#settingsMsg").textContent="Ayarlar kaydedilemedi."}};
+$("#passwordClose").onclick=()=>$("#passwordModal").classList.add("hidden");
+async function changePass(){const a=$("#np").value,b=$("#np2").value;if(a.length<6||a!==b){$("#passMsg").textContent="Şifreler en az 6 karakter olmalı ve eşleşmeli.";return}try{await updatePassword(auth.currentUser,a);$("#passMsg").textContent="✓ Şifre değiştirildi."}catch(e){$("#passMsg").textContent="Güvenlik için çıkış yapıp tekrar giriş yapmanız gerekebilir."}}
+$("#savePass").onclick=changePass;
+$("#settingsModal").addEventListener("dblclick",e=>{if(e.target.closest("h2")){$("#settingsModal").classList.add("hidden");$("#passwordModal").classList.remove("hidden")}});
+
+onAuthStateChanged(auth,u=>{const ok=u&&!u.isAnonymous&&u.email?.toLowerCase()===ADMIN;if(ok){$("#login").classList.add("hidden");$("#panel").classList.remove("hidden");$("#settings").classList.remove("hidden");$("#serviceBtn").classList.remove("hidden");$("#logout").classList.remove("hidden");load().catch(e=>{$("#list").innerHTML='<div class="empty">Veriler yüklenemedi. Firestore Rules kontrol edin.</div>'})}else{$("#login").classList.remove("hidden");$("#panel").classList.add("hidden")}});
+</script>
+</body></html>
